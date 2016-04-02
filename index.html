@@ -1,37 +1,25 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en-us">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="Bitwise-nn-fpga : ">
-
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>Bitwise-nn-fpga</title>
+    <meta charset="UTF-8">
+    <title>Bitwise-nn-fpga by tdrussell</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
-
   <body>
+    <section class="page-header">
+      <h1 class="project-name">Bitwise-nn-fpga</h1>
+      <h2 class="project-tagline"></h2>
+      <a href="https://github.com/tdrussell/bitwise-nn-fpga" class="btn">View on GitHub</a>
+      <a href="https://github.com/tdrussell/bitwise-nn-fpga/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/tdrussell/bitwise-nn-fpga/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/tdrussell/bitwise-nn-fpga">View on GitHub</a>
-
-          <h1 id="project_title">Bitwise-nn-fpga</h1>
-          <h2 id="project_tagline"></h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/tdrussell/bitwise-nn-fpga/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/tdrussell/bitwise-nn-fpga/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
+    <section class="main-content">
+      <h1>
 <a id="fpga-implementation-of-bitwise-neural-networks" class="anchor" href="#fpga-implementation-of-bitwise-neural-networks" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>FPGA Implementation of Bitwise Neural Networks</h1>
 
 <p>Trace Russell</p>
@@ -46,12 +34,16 @@
 
 <p>A bitwise neural network is a neural network where all the weights and activations are binary values. A forward pass through the network consists only of bitwise operations and bit counting. As a result, it is possible to efficiently implement these types of networks on an FPGA, because there is no need for expensive multiply operations.</p>
 
-<p>The FPGA hardware naturally gives many opportunities to exploit parallelism in order to speed up forward passes through the neural network. For instance, and obvious parallelization opportunity is to compute an single neuron's weight 'multiplications' (actually bitwise operations) in parallel. There may also be chances to compute multiple neuron activations in parallel. Furthermore, adding up the results of weight multiplications might be done with a parallel logarithmic adder tree.</p>
+<p>The FPGA hardware naturally gives many opportunities to exploit parallelism in order to speed up forward passes through the neural network. For instance, an obvious parallelization opportunity is to compute an single neuron's weight 'multiplications' (actually bitwise operations) in parallel. There may also be chances to compute multiple neuron activations in parallel. Furthermore, adding up the results of weight multiplications might be done with a parallel logarithmic adder tree.</p>
 
 <h3>
 <a id="the-challenge" class="anchor" href="#the-challenge" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The Challenge:</h3>
 
-<p>This project has many key challenges. The main overarching challenge is how to efficiently represent the bitwise neural network on the FPGA. The key point here is where the weights will be stored. For small networks, it might be possible to store the network weights in block RAM on the FPGA itself. Larger networks might require storing the weights in main system RAM, and streaming them in during a forward pass along with the input data itself. Both of these options will need to be explored.</p>
+<p>This project has many key challenges. The main overarching challenge is how to efficiently represent the bitwise neural network on the FPGA, and how to maximally exploits parallelism inherent in the FPGA hardware resources. For the network representation, the key point is where the weights will be stored. For small networks, it might be possible to store the network weights in block RAM on the FPGA itself. Larger networks might require storing the weights in main system RAM, and streaming them in during a forward pass along with the input data itself. Both of these options will need to be explored.</p>
+
+<p>There are many avenues for parallelization. These include parallelizing weight multiplications for a single neuron, and computing the activations of possibly more than one neuron in parallel. There are also synchronization challenges, because computations for one layer of the network can only begin once the activations of the previous layer are fully computed. In short, the parallelization and synchronization challenges in this project are nontrivial and will require significant research and investigation to arrive at an optimal implementation.</p>
+
+<p>There are many constraints inherent in the FPGA hardware. There are are limited amounts of LUTs and block ram units. Perhaps more importantly for neural networks in particular, logic routing may become a limiting factor due to the very high connectivity between layers of the network. It is almost certainly impossible to literally wire up one fully-connected layer to another, so I will need to come up with some type of serialization strategy to process only one part of the network at a time.</p>
 
 <h3>
 <a id="resources" class="anchor" href="#resources" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Resources:</h3>
@@ -60,16 +52,18 @@
 
 <p>The main goal of this project is implementing an FPGA architecture for running bitwise neural networks, rather than the design of software that allows training those bitwise networks. Luckily, the authors of [1] have released their research software that allows training and running binarized neural networks on CPUs and GPUs. One of their implementations is for the Torch7 scientific computing framework, which I am already well familiar with. As such, it should not be difficult for me to use this software to train a bitwise neural network whose implementation I will develop on the FPGA. The paper of [2] is also another look into bitwise neural networks, and it may contain useful information to guide me as well.</p>
 
+<p>15418 is primarily a computer science course, and this project heavily involves an FPGA, so I feel it is worth mentioning that I am a CS master's student focusing on machine learning, but previously I did my undergraduate degree in electrical engineering. Specifically, I focused on integrated circuit design, and had the opportunity to write both Verilog and VHDL for FPGAs in multiple courses. I don't believe the learning curve of switching from software to a hardware description language will too difficult for me. Furthermore, I think my knowledge of both machine learning and FPGA development makes me well-suited to tackling this project.</p>
+
 <h3>
 <a id="goals-and-deliverables" class="anchor" href="#goals-and-deliverables" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Goals and Deliverables:</h3>
 
-<p>The main goal I plan to achieve during this project is straightforward: a simple FPGA-based implementation of bitwise neural networks consisting of fully connected hidden layers. This type of network is essentially the simplest, and is the main target I will aim for. For the training and testing dataset I will use MNIST, which consists of handwritten numerals.</p>
+<p>The main goal I plan to achieve during this project is straightforward: a simple FPGA-based implementation of bitwise neural networks consisting of fully connected hidden layers. This type of network is the simplest, and is the main target I will aim for. For the training and testing dataset I will use MNIST, which consists of handwritten digits.</p>
 
 <p>If the project goes very well, I would additionally like to achieve an implementation of convolutional bitwise neural networks. Convolutional networks are far more useful for image recognition tasks than simple networks of fully-connected layers, which would expand the application scope of my FPGA-based implementation.</p>
 
 <p>At the parallelism competition, I will hopefully show a demo of my implementation classifying the entire MNIST testing dataset in a short amount of time (on a GPU this takes a few seconds, and hopefully my implementation will be competitive). I will also present graphs characterizing the performance (running time) and classification accuracy of different bitwise network models. I will compare these numbers with the full network models running on both a CPU and GPU (this is easy to do with Torch).</p>
 
-<p>It is hard to predict what kind of exact performance numbers I am expecting from my implementation. The most I can say is that I hope to be within an order of magnitude of the runtime of the full neural networking running on a GPU. Even if the bitwise network running on an FPGA is much slower compared to the full network running on the GPU, the power efficiency will be much higher and I can give calculations for those numbers as well.</p>
+<p>It is hard to predict what kind of exact performance numbers I am expecting from my implementation. The most I can say is that I hope to be within an order of magnitude of the runtime of the full neural network executing on a GPU. Even if the bitwise network running on an FPGA is much slower compared to the full network running on the GPU, the power efficiency will be much higher and I can give calculations for those numbers as well.</p>
 
 <h3>
 <a id="platform-choice" class="anchor" href="#platform-choice" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Platform Choice:</h3>
@@ -79,10 +73,10 @@
 <h3>
 <a id="schedule" class="anchor" href="#schedule" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Schedule:</h3>
 
-<p>(Listed week-by-week, labelled by Sunday that starts the week)
+<p>(Listed week-by-week, labelled by the Sunday that starts the week)
 4/3: Finalize selection of hardware, and acquire said hardware. Talk around on campus and see if I can borrow an appropriate FPGA dev board for free. If not, I can purchase something like a Zedboard or Parallella, which is within my budget I am willing to spend.</p>
 
-<p>4/10 (week of checkpoint): Create initial sanity-check Verilog code for the FPGA that does something simple like pull data out of RAM, add something to it, and write the result back to RAM. This will give me the foundations of a input-processing-output pipeline, which is essentially what a feedforward pass through the neural network is. Use the software from [1] to train my own bitwise neural network on a dataset like MNIST. I have a GTX 980 GPU, and can spare a few hours or even a full day on my own computer to train the model.</p>
+<p>4/10 (week of checkpoint): Create initial sanity-check Verilog code for the FPGA that does something simple like pull data out of RAM, add something to it, and write the result back to RAM. This will give me the foundations of a input-processing-output pipeline, which is essentially what a feedforward pass through the neural network is. Use the software from [1] to train my own bitwise neural network on a dataset like MNIST. I have a GTX 980 GPU, and can spare a few hours or even a full day on my own computer to train the model. Also start sketching out architectural ideas for the FPGA implementation.</p>
 
 <p>4/17: Begin designing the architecture for the bitwise neural network implementation. This will involve writing Verilog, and very likely using a logic simulator to start testing individual modules.</p>
 
@@ -99,18 +93,15 @@
 Activations Constrained to +1 or -1. (<a href="http://arxiv.org/pdf/1602.02830.pdf">http://arxiv.org/pdf/1602.02830.pdf</a>)</p>
 
 <p>[2] Bitwise Neural Networks. (<a href="http://arxiv.org/pdf/1601.06071v1.pdf">http://arxiv.org/pdf/1601.06071v1.pdf</a>)</p>
-      </section>
-    </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Bitwise-nn-fpga maintained by <a href="https://github.com/tdrussell">tdrussell</a></p>
-        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/tdrussell/bitwise-nn-fpga">Bitwise-nn-fpga</a> is maintained by <a href="https://github.com/tdrussell">tdrussell</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
 
-    
+    </section>
 
+  
   </body>
 </html>
