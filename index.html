@@ -58,12 +58,47 @@
 
 <p>As mentioned above, I currently plan on using a Xilinx Zynq-7000 based FPGA development board for the implementation, though this might change as I more thoroughly research hardware options. The Zync SoC has an integrated ARM processor, and I believe this can make the implementation simpler in some ways. For instance, I can use the embedded Linux running on the ARM processor to manage allocating memory in main RAM, and offload a forward pass of an example through the network to the FPGA.</p>
 
-<p>The main goal of this project is implementing an FPGA architecture for running bitwise neural networks, rather than the design of software that allows training those bitwise networks. Luckily, the authors of [1] have released their research software that allows training and running binarized neural networks on CPUs and GPUs. One of their implementations is for the Torch7 scientific computing framework, which I am already well familiar with. As such, it should not be difficult for me to use this software to train a bitwise neural network whose implementation I will develop on the FPGA.</p>
+<p>The main goal of this project is implementing an FPGA architecture for running bitwise neural networks, rather than the design of software that allows training those bitwise networks. Luckily, the authors of [1] have released their research software that allows training and running binarized neural networks on CPUs and GPUs. One of their implementations is for the Torch7 scientific computing framework, which I am already well familiar with. As such, it should not be difficult for me to use this software to train a bitwise neural network whose implementation I will develop on the FPGA. The paper of [2] is also another look into bitwise neural networks, and it may contain useful information to guide me as well.</p>
 
 <h3>
-<a id="goals-and-deliverables" class="anchor" href="#goals-and-deliverables" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Goals and Deliverables</h3>
+<a id="goals-and-deliverables" class="anchor" href="#goals-and-deliverables" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Goals and Deliverables:</h3>
 
-<p>To be added.</p>
+<p>The main goal I plan to achieve during this project is straightforward: a simple FPGA-based implementation of bitwise neural networks consisting of fully connected hidden layers. This type of network is essentially the simplest, and is the main target I will aim for. For the training and testing dataset I will use MNIST, which consists of handwritten numerals.</p>
+
+<p>If the project goes very well, I would additionally like to achieve an implementation of convolutional bitwise neural networks. Convolutional networks are far more useful for image recognition tasks than simple networks of fully-connected layers, which would expand the application scope of my FPGA-based implementation.</p>
+
+<p>At the parallelism competition, I will hopefully show a demo of my implementation classifying the entire MNIST testing dataset in a short amount of time (on a GPU this takes a few seconds, and hopefully my implementation will be competitive). I will also present graphs characterizing the performance (running time) and classification accuracy of different bitwise network models. I will compare these numbers with the full network models running on both a CPU and GPU (this is easy to do with Torch).</p>
+
+<p>It is hard to predict what kind of exact performance numbers I am expecting from my implementation. The most I can say is that I hope to be within an order of magnitude of the runtime of the full neural networking running on a GPU. Even if the bitwise network running on an FPGA is much slower compared to the full network running on the GPU, the power efficiency will be much higher and I can give calculations for those numbers as well.</p>
+
+<h3>
+<a id="platform-choice" class="anchor" href="#platform-choice" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Platform Choice:</h3>
+
+<p>As mentioned above, I currently plan on using a Zynq-7000 based development board. The Zynq SoC has reprogrammable logic with 10s of thousands of LUTs, and hundreds of KB of block ram. In addition there is an ARM processor capable of running embedded Linux and interfacing with the reconfigurable logic portion of the SoC.</p>
+
+<h3>
+<a id="schedule" class="anchor" href="#schedule" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Schedule:</h3>
+
+<p>(Listed week-by-week, labelled by Sunday that starts the week)
+4/3: Finalize selection of hardware, and acquire said hardware. Talk around on campus and see if I can borrow an appropriate FPGA dev board for free. If not, I can purchase something like a Zedboard or Parallella, which is within my budget I am willing to spend.</p>
+
+<p>4/10 (week of checkpoint): Create initial sanity-check Verilog code for the FPGA that does something simple like pull data out of RAM, add something to it, and write the result back to RAM. This will give me the foundations of a input-processing-output pipeline, which is essentially what a feedforward pass through the neural network is. Use the software from [1] to train my own bitwise neural network on a dataset like MNIST. I have a GTX 980 GPU, and can spare a few hours or even a full day on my own computer to train the model.</p>
+
+<p>4/17: Begin designing the architecture for the bitwise neural network implementation. This will involve writing Verilog, and very likely using a logic simulator to start testing individual modules.</p>
+
+<p>4/24: Start putting all the pieces of the architecture together. Create an example application that can pass a testing example through the bitwise neural network on the FPGA and produce a classification prediction.</p>
+
+<p>5/1: Begin working on the final writeup and project presentation. If things have been going very well and are ahead of schedule, investigate the feasibility of implementing a convolutional bitwise neural network on the FPGA in addition to a network of fully-connected layers.</p>
+
+<p>5/8: Final preparations for the presentation on Monday, and final adjustments to the writeup that is also due Monday.</p>
+
+<h3>
+<a id="references" class="anchor" href="#references" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>References:</h3>
+
+<p>[1] Binarized Neural Networks: Training Neural Networks with Weights and
+Activations Constrained to +1 or -1. (<a href="http://arxiv.org/pdf/1602.02830.pdf">http://arxiv.org/pdf/1602.02830.pdf</a>)</p>
+
+<p>[2] Bitwise Neural Networks. (<a href="http://arxiv.org/pdf/1601.06071v1.pdf">http://arxiv.org/pdf/1601.06071v1.pdf</a>)</p>
       </section>
     </div>
 
