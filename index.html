@@ -87,13 +87,13 @@
 
 <p>(Listed week-by-week, labelled by the Sunday that starts the week)</p>
 
-<p>4/3: Finalize selection of hardware, and acquire said hardware. Talk around on campus and see if I can borrow an appropriate FPGA dev board for free. If not, I can purchase something like a Zedboard or Parallella, which is within my budget I am willing to spend.</p>
+<p>4/3: Finalize selection of hardware, and acquire said hardware. Talk around on campus and see if I can borrow an appropriate FPGA dev board for free. If not, I can purchase something like a Zedboard or Parallella, which is within my budget I am willing to spend. (complete)</p>
 
-<p>4/10 (week of checkpoint): Create initial sanity-check Verilog code for the FPGA that does something simple like pull data out of RAM, add something to it, and write the result back to RAM. This will give me the foundations of a input-processing-output pipeline, which is essentially what a feedforward pass through the neural network is. Use the software from [1] to train my own bitwise neural network on a dataset like MNIST. I have a GTX 980 GPU, and can spare a few hours or even a full day on my own computer to train the model. Also start sketching out architectural ideas for the FPGA implementation.</p>
+<p>4/10 (week of checkpoint): Create initial sanity-check Verilog code for the FPGA that does something simple like pull data out of RAM, add something to it, and write the result back to RAM. This will give me the foundations of a input-processing-output pipeline, which is essentially what a feedforward pass through the neural network is. Use the software from [1] to train my own bitwise neural network on a dataset like MNIST. I have a GTX 980 GPU, and can spare a few hours or even a full day on my own computer to train the model. Also start sketching out architectural ideas for the FPGA implementation. (complete)</p>
 
-<p>4/17: Begin designing the architecture for the bitwise neural network implementation. This will involve writing Verilog, and very likely using a logic simulator to start testing individual modules.</p>
+<p>4/17: Begin designing the architecture for the bitwise neural network implementation. This will involve writing Verilog or using Vivado HLS. (in progress / partially complete)</p>
 
-<p>4/24: Start putting all the pieces of the architecture together. Create an example application that can pass a testing example through the bitwise neural network on the FPGA and produce a classification prediction.</p>
+<p>4/24: Start putting all the pieces of the architecture together. Create an example application that can pass a testing example through the bitwise neural network on the FPGA and produce a classification prediction. (in progress / partially complete)</p>
 
 <p>5/1: Begin working on the final writeup and project presentation. If things have been going very well and are ahead of schedule, investigate the feasibility of implementing a convolutional bitwise neural network on the FPGA in addition to a network of fully-connected layers.</p>
 
@@ -107,6 +107,20 @@
 <p>For the FPGA bitwise neural network architecture, I decided to use Vivado high-level synthesis (HLS), which allows you to write C code that can also be synthesized to RTL that can be loaded onto the FPGA. This is not as efficient as writing Verilog by hand, but it let me quickly get a baseline solution running. My current code is a mostly-complete baseline implementation, but currently does not give correct classification results for the MNIST images. There is probably a bug somewhere that I hope to solve within the next few days. Regardless, all of the code is in place for loading the network weights and performing the bitwise operations to predict a label, so I am mostly fine with the results so far.</p>
 
 <p>Once I fix the current bugs, the next step will be to synthesize the code to RTL and start trying to improve performance. There are many ways to improve performance in Vivado HLS by pipelining operations and using parallelism. Xilinx has provided HLS tutorials that I can use to try out different performance enhancements. I may also rewrite some or all of my HLS code in Verilog, which takes more effort but would give me more control of how the hardware synthesizes. The final step will be to test out the code on the actual FPGA hardware.</p>
+
+<p>I have completed the first part of my goals as listed in the original schedule. I am currently on track to be able to complete the main deliverables and produce a working design by the time of the Parallelism competition. At this point I don't know whether I will be able to complete the optimistic goal of a convolutional bitwise neural network. It depends on how long it takes me to iron out the current bugs in my code and how well the performance optimizations go. For the parallelism competition I still plan to show a demo of my code running the classification of the MNIST images on the FPGA hardware. I will also show graphs and charts characterizing the performance and power consumption, and comparing it to that of a CPU and GPU.</p>
+
+<p>Here is a new detailed schedule for the second part of the project. It is broken down by roughly half-week increments. The dates are the planned deadlines for the listed goals.</p>
+
+<p>4/21: Fix the correctness bugs in the baseline implementation. Verify that the RTL synthesis of the current code works correctly.</p>
+
+<p>4/25: Improve performance over the baseline implementation by using pipelining and parallel bitwise computations.</p>
+
+<p>4/29: Make any necessary modifications to the code so that it can be run as an application on the FPGA hardware.</p>
+
+<p>5/3: If time, get more performance improvements by rewriting some or all of the main computational kernel in Verilog. Possibly implement convolutional bitwise networks.</p>
+
+<p>5/8: Finalize website and create final report.</p>
 
 <h3>
 <a id="references" class="anchor" href="#references" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>References:</h3>
