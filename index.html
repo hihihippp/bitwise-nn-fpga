@@ -100,6 +100,15 @@
 <p>5/8: Final preparations for the presentation on Monday, and final adjustments to the writeup that is also due Monday.</p>
 
 <h3>
+<a id="checkpoint" class="anchor" href="#checkpoint" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Checkpoint</h3>
+
+<p>So far I have gathered all necessary materials, trained a bitwise neural network, and done some preliminary coding of the FPGA neural network architecture. I bought a Zybo development board which has a Zynq-7000 FPGA. I also downloaded Xilinx Vivado and confirmed that some test applications synthesize to RTL and pass the testbenches correctly. I used the code provided in [1] to train a bitwise neural network for the MNIST dataset. The network is composed of several fully connected binary layers. I also wrote some Lua scripts to export the network weights and MNIST images into suitable binary files that can be loaded from C code.</p>
+
+<p>For the FPGA bitwise neural network architecture, I decided to use Vivado high-level synthesis (HLS), which allows you to write C code that can also be synthesized to RTL that can be loaded onto the FPGA. This is not as efficient as writing Verilog by hand, but it let me quickly get a baseline solution running. My current code is a mostly-complete baseline implementation, but currently does not give correct classification results for the MNIST images. There is probably a bug somewhere that I hope to solve within the next few days. Regardless, all of the code is in place for loading the network weights and performing the bitwise operations to predict a label, so I am mostly fine with the results so far.</p>
+
+<p>Once I fix the current bugs, the next step will be to synthesize the code to RTL and start trying to improve performance. There are many ways to improve performance in Vivado HLS by pipelining operations and using parallelism. Xilinx has provided HLS tutorials that I can use to try out different performance enhancements. I may also rewrite some or all of my HLS code in Verilog, which takes more effort but would give me more control of how the hardware synthesizes. The final step will be to test out the code on the actual FPGA hardware.</p>
+
+<h3>
 <a id="references" class="anchor" href="#references" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>References:</h3>
 
 <p>[1] Binarized Neural Networks: Training Neural Networks with Weights and
