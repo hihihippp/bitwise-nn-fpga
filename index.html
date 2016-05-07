@@ -37,6 +37,15 @@
 <p>Trace Russell</p>
 
 <h2>
+<a id="summary-of-accomplishments" class="anchor" href="#summary-of-accomplishments" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Summary of Accomplishments</h2>
+
+<p>I was able to train a bitwise neural network, export the weights to a suitable binary format, and write the main compute kernel in C. The neural network is runnable in C, and I verified that it gives correct results and gets above 90% recognition accuracy on the MNIST handwritten digits dataset. I also used Vivado high level synthesis to synthesize the code to register transfer logic (RTL), and created an IP block ready to be integrated into an FPGA design.</p>
+
+<p>Unfortunately, I was not able to get my code to run on the actual FPGA hardware. I am using the Xilinx Zynq SoC as my FPGA, and it turns out that simply setting up the infrastructure to move data from DDR3 RAM, to the FPGA logic, and back to RAM again is a very complicated task in its own right. I encountered many problems trying to figure this part out, and was unable to get it working in time. I did not anticipate this part of the project being so difficult and time consuming, and in hindsight it would have been good to have a partner who could spend the project time focusing solely on this part.</p>
+
+<p>I have modified the code provided by the authors of [1] slightly in order to train suitable bitwise neural networks. The main compute kernel is written in C, and I also have a testbench in C to verify the results are correct. I have also written several Lua scripts to take the trained bitwise network and package the weights and inputs into a suitable binary format that can be loaded from native C code. I am currently cleaning up the code, and I plan to upload it all on this repository by the Monday deadline. I will also write a more detailed account of what I accomplished, and discuss some of the problems I encountered that prevented me from finishing the project fully. Since I don't have actual speedup results from running the code on the FPGA, I plan on computing some kind of theoretical speedup results and discussing that instead.</p>
+
+<h2>
 <a id="project-proposal" class="anchor" href="#project-proposal" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Project Proposal</h2>
 
 <p>This project will consist of an FPGA-based implementation of bitwise neural networks. I currently plan on implementing the system on a Xilinx Zynq-7000 FPGA. </p>
