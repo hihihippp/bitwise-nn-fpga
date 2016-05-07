@@ -39,7 +39,7 @@
 <h2>
 <a id="summary-of-accomplishments" class="anchor" href="#summary-of-accomplishments" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Summary of Accomplishments</h2>
 
-<p>I was able to train a bitwise neural network, export the weights to a suitable binary format, and write the main compute kernel in C. The neural network is runnable in C, and I verified that it gives correct results and gets above 90% recognition accuracy on the MNIST handwritten digits dataset. I also used Vivado high level synthesis to synthesize the code to register transfer logic (RTL), and created an IP block ready to be integrated into an FPGA design.</p>
+<p>I was able to train a bitwise neural network, export the weights to a suitable binary format, and write the main compute kernel in C. The neural network is runnable in C, and I verified that it gives correct results and gets above 90% recognition accuracy on the MNIST handwritten digits dataset. I also used Vivado high level synthesis to synthesize the code to register transfer level (RTL) Verilog, and created an IP block ready to be integrated into an FPGA design.</p>
 
 <p>Unfortunately, I was not able to get my code to run on the actual FPGA hardware. I am using the Xilinx Zynq SoC as my FPGA, and it turns out that simply setting up the infrastructure to move data from DDR3 RAM, to the FPGA logic, and back to RAM again is a very complicated task in its own right. I encountered many problems trying to figure this part out, and was unable to get it working in time. I did not anticipate this part of the project being so difficult and time consuming, and in hindsight it would have been good to have a partner who could spend the project time focusing solely on this part.</p>
 
