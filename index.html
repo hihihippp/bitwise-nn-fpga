@@ -34,104 +34,40 @@
         <h1>
 <a id="fpga-implementation-of-bitwise-neural-networks" class="anchor" href="#fpga-implementation-of-bitwise-neural-networks" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>FPGA Implementation of Bitwise Neural Networks</h1>
 
-<p>Trace Russell</p>
+<p>Trace Russell
+Carnegie Mellon University, 15418 Spring 2016 Final Project</p>
 
 <h2>
-<a id="summary-of-accomplishments" class="anchor" href="#summary-of-accomplishments" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Summary of Accomplishments</h2>
+<a id="final-writeup" class="anchor" href="#final-writeup" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Final Writeup</h2>
 
-<p>I was able to train a bitwise neural network, export the weights to a suitable binary format, and write the main compute kernel in C. The neural network is runnable in C, and I verified that it gives correct results and gets above 90% recognition accuracy on the MNIST handwritten digits dataset. I also used Vivado high level synthesis to synthesize the code to register transfer level (RTL) Verilog, and created an IP block ready to be integrated into an FPGA design.</p>
-
-<p>Unfortunately, I was not able to get my code to run on the actual FPGA hardware. I am using the Xilinx Zynq SoC as my FPGA, and it turns out that simply setting up the infrastructure to move data from DDR3 RAM, to the FPGA logic, and back to RAM again is a very complicated task in its own right. I encountered many problems trying to figure this part out, and was unable to get it working in time. I did not anticipate this part of the project being so difficult and time consuming, and in hindsight it would have been good to have a partner who could spend the project time focusing solely on this part.</p>
-
-<p>I have modified the code provided by the authors of [1] slightly in order to train suitable bitwise neural networks. The main compute kernel is written in C, and I also have a testbench in C to verify the results are correct. I have also written several Lua scripts to take the trained bitwise network and package the weights and inputs into a suitable binary format that can be loaded from native C code. I am currently cleaning up the code, and I plan to upload it all on this repository by the Monday deadline. I will also write a more detailed account of what I accomplished, and discuss some of the problems I encountered that prevented me from finishing the project fully. Since I don't have actual speedup results from running the code on the FPGA, I plan on computing some kind of theoretical speedup results and discussing that instead.</p>
-
-<h2>
-<a id="project-proposal" class="anchor" href="#project-proposal" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Project Proposal</h2>
-
-<p>This project will consist of an FPGA-based implementation of bitwise neural networks. I currently plan on implementing the system on a Xilinx Zynq-7000 FPGA. </p>
+<p>I developed an FPGA implementation of bitwise neural networks, where all of the arithmetic operations consist solely of bitwise operations and integer addition/comparison. I explore several different optimizations for adding pipelining and parallelism to the hardware to get speedups over the baseline sequential implementation. I did not have time to get my implementation running on actual hardware, but I give theoretical calculations showing how my implementation would get several orders of magnitude speedup over off-the-shelf non-bitwise neural network implementations for CPUs and GPUs, primarily due to more efficient use of memory bandwidth.</p>
 
 <h3>
 <a id="background" class="anchor" href="#background" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Background:</h3>
 
-<p>A bitwise neural network is a neural network where all the weights and activations are binary values. A forward pass through the network consists only of bitwise operations and bit counting. As a result, it is possible to efficiently implement these types of networks on an FPGA, because there is no need for expensive multiply operations.</p>
+<p>A bitwise neural network is a neural network where all the weights and activations are binary values. A forward pass through the network consists only of bitwise operations, plus a few integer additions and comparisons. As a result, it is possible to efficiently implement these types of networks on an FPGA, because there is no need for expensive multiply operations.</p>
 
-<p>The FPGA hardware naturally gives many opportunities to exploit parallelism in order to speed up forward passes through the neural network. For instance, an obvious parallelization opportunity is to compute an single neuron's weight 'multiplications' (actually bitwise operations) in parallel. There may also be chances to compute multiple neuron activations in parallel. Furthermore, adding up the results of weight multiplications might be done with a parallel logarithmic adder tree.</p>
+<p>For a fully-connected neural network for classification tasks, the input is a binary vector, and the output is an N-dimensional vector, where N is the number of classes. Each non-output layer of the network consists of "multiplying" the input vector by a weight matrix (the binary multiplication is actually just XNOR), and then comparing the integer values of the output vector with a threshold to convert them back into binary values. The output layer of the network skips the thresholding step, and instead the class with the largest integer value is the predicted class. The basics of computing a forward pass through the network can be summarized as follows:</p>
 
-<h3>
-<a id="the-challenge" class="anchor" href="#the-challenge" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The Challenge:</h3>
+<p>for each layer:
+    for each output neuron:
+        acc = 0
+        for each input neuron:
+            acc += weight XNOR input
+        output = threshold(acc)</p>
 
-<p>This project has many key challenges. The main overarching challenge is how to efficiently represent the bitwise neural network on the FPGA, and how to maximally exploits parallelism inherent in the FPGA hardware resources. For the network representation, the key point is where the weights will be stored. For small networks, it might be possible to store the network weights in block RAM on the FPGA itself. Larger networks might require storing the weights in main system RAM, and streaming them in during a forward pass along with the input data itself. Both of these options will need to be explored.</p>
-
-<p>There are many avenues for parallelization. These include parallelizing weight multiplications for a single neuron, and computing the activations of possibly more than one neuron in parallel. There are also synchronization challenges, because computations for one layer of the network can only begin once the activations of the previous layer are fully computed. In short, the parallelization and synchronization challenges in this project are nontrivial and will require significant research and investigation to arrive at an optimal implementation.</p>
-
-<p>There are many constraints inherent in the FPGA hardware. There are are limited amounts of LUTs and block ram units. Perhaps more importantly for neural networks in particular, logic routing may become a limiting factor due to the very high connectivity between layers of the network. It is almost certainly impossible to literally wire up one fully-connected layer to another, so I will need to come up with some type of serialization strategy to process only one part of the network at a time.</p>
-
-<h3>
-<a id="resources" class="anchor" href="#resources" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Resources:</h3>
-
-<p>As mentioned above, I currently plan on using a Xilinx Zynq-7000 based FPGA development board for the implementation, though this might change as I more thoroughly research hardware options. The Zync SoC has an integrated ARM processor, and I believe this can make the implementation simpler in some ways. For instance, I can use the embedded Linux running on the ARM processor to manage allocating memory in main RAM, and offload a forward pass of an example through the network to the FPGA.</p>
-
-<p>The main goal of this project is implementing an FPGA architecture for running bitwise neural networks, rather than the design of software that allows training those bitwise networks. Luckily, the authors of [1] have released their research software that allows training and running binarized neural networks on CPUs and GPUs. One of their implementations is for the Torch7 scientific computing framework, which I am already well familiar with. As such, it should not be difficult for me to use this software to train a bitwise neural network whose implementation I will develop on the FPGA. The paper of [2] is also another look into bitwise neural networks, and it may contain useful information to guide me as well.</p>
-
-<p>15418 is primarily a computer science course, and this project heavily involves an FPGA, so I feel it is worth mentioning that I am a CS master's student focusing on machine learning, but previously I did my undergraduate degree in electrical engineering. Specifically, I focused on integrated circuit design, and had the opportunity to write both Verilog and VHDL for FPGAs in multiple courses. I don't believe the learning curve of switching from software to a hardware description language will too difficult for me. Furthermore, I think my knowledge of both machine learning and FPGA development makes me well-suited to tackling this project.</p>
+<p>The outermost 'layer' loop is not parallelizable, because each layer depends on the results of the previous layer. However, either of the innermost loops is trivially parallelizable. Because there is only about 1 mathematical operation per weight, it turns out that memory bandwidth becomes the limiting factor for getting speedup improvements. As a result, for a hardware implementation most of the speedup is achieved through pipelining the innermost loops. I discuss this in more detail later, but a key takeaway is that most of the parallelism in a hardware bitwise neural network implementation comes in the form of pipelining. The goal is to achieve a total throughput of 1 operation per cycle, as this will saturate the memory bus and any further speedups are impossible.</p>
 
 <h3>
-<a id="goals-and-deliverables" class="anchor" href="#goals-and-deliverables" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Goals and Deliverables:</h3>
+<a id="approach" class="anchor" href="#approach" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Approach</h3>
 
-<p>The main goal I plan to achieve during this project is straightforward: a simple FPGA-based implementation of bitwise neural networks consisting of fully connected hidden layers. This type of network is the simplest, and is the main target I will aim for. For the training and testing dataset I will use MNIST, which consists of handwritten digits.</p>
+<p>I first started by using open source bitwise neural network code [1] to train a network from scratch. I made some modifications to the code, such as removing a few non-bitwise operations from the network and simplifying batch normalization layers. I then wrote some Lua scripts (available in this repository) to extract the binary weights and inputs, and package them in a format suitable for loading from C code.</p>
 
-<p>If the project goes very well, I would additionally like to achieve an implementation of convolutional bitwise neural networks. Convolutional networks are far more useful for image recognition tasks than simple networks of fully-connected layers, which would expand the application scope of my FPGA-based implementation.</p>
+<p>I implemented the main computational kernel using Xilinx's Vivado High-Level Synthesis (HLS), which which takes a sequential C or C++ description of an algorithm and synthesizes it into RTL Verilog or VHDL. HLS automatically parallelizes any operation it can. A good example of this is the following code:</p>
 
-<p>At the parallelism competition, I will hopefully show a demo of my implementation classifying the entire MNIST testing dataset in a short amount of time (on a GPU this takes a few seconds, and hopefully my implementation will be competitive). I will also present graphs characterizing the performance (running time) and classification accuracy of different bitwise network models. I will compare these numbers with the full network models running on both a CPU and GPU (this is easy to do with Torch).</p>
+<p>(insert code here)</p>
 
-<p>It is hard to predict what kind of exact performance numbers I am expecting from my implementation. The most I can say is that I hope to be within an order of magnitude of the runtime of the full neural network executing on a GPU. Even if the bitwise network running on an FPGA is much slower compared to the full network running on the GPU, the power efficiency will be much higher and I can give calculations for those numbers as well.</p>
-
-<h3>
-<a id="platform-choice" class="anchor" href="#platform-choice" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Platform Choice:</h3>
-
-<p>As mentioned above, I currently plan on using a Zynq-7000 based development board. The Zynq SoC has reprogrammable logic with 10s of thousands of LUTs, and hundreds of KB of block ram. In addition there is an ARM processor capable of running embedded Linux and interfacing with the reconfigurable logic portion of the SoC.</p>
-
-<h3>
-<a id="schedule" class="anchor" href="#schedule" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Schedule:</h3>
-
-<p>(Listed week-by-week, labelled by the Sunday that starts the week)</p>
-
-<p>4/3: Finalize selection of hardware, and acquire said hardware. Talk around on campus and see if I can borrow an appropriate FPGA dev board for free. If not, I can purchase something like a Zedboard or Parallella, which is within my budget I am willing to spend. (complete)</p>
-
-<p>4/10 (week of checkpoint): Create initial sanity-check Verilog code for the FPGA that does something simple like pull data out of RAM, add something to it, and write the result back to RAM. This will give me the foundations of a input-processing-output pipeline, which is essentially what a feedforward pass through the neural network is. Use the software from [1] to train my own bitwise neural network on a dataset like MNIST. I have a GTX 980 GPU, and can spare a few hours or even a full day on my own computer to train the model. Also start sketching out architectural ideas for the FPGA implementation. (complete)</p>
-
-<p>4/17: Begin designing the architecture for the bitwise neural network implementation. This will involve writing Verilog or using Vivado HLS. (in progress / partially complete)</p>
-
-<p>4/24: Start putting all the pieces of the architecture together. Create an example application that can pass a testing example through the bitwise neural network on the FPGA and produce a classification prediction. (in progress / partially complete)</p>
-
-<p>5/1: Begin working on the final writeup and project presentation. If things have been going very well and are ahead of schedule, investigate the feasibility of implementing a convolutional bitwise neural network on the FPGA in addition to a network of fully-connected layers.</p>
-
-<p>5/8: Final preparations for the presentation on Monday, and final adjustments to the writeup that is also due Monday.</p>
-
-<h3>
-<a id="checkpoint" class="anchor" href="#checkpoint" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Checkpoint</h3>
-
-<p>So far I have gathered all necessary materials, trained a bitwise neural network, and done some preliminary coding of the FPGA neural network architecture. I bought a Zybo development board which has a Zynq-7000 FPGA. I also downloaded Xilinx Vivado and confirmed that some test applications synthesize to RTL and pass the testbenches correctly. I used the code provided in [1] to train a bitwise neural network for the MNIST dataset. The network is composed of several fully connected binary layers. I also wrote some Lua scripts to export the network weights and MNIST images into suitable binary files that can be loaded from C code.</p>
-
-<p>For the FPGA bitwise neural network architecture, I decided to use Vivado high-level synthesis (HLS), which allows you to write C code that can also be synthesized to RTL that can be loaded onto the FPGA. This is not as efficient as writing Verilog by hand, but it let me quickly get a baseline solution running. My current code is a mostly-complete baseline implementation, but currently does not give correct classification results for the MNIST images. There is probably a bug somewhere that I hope to solve within the next few days. Regardless, all of the code is in place for loading the network weights and performing the bitwise operations to predict a label, so I am mostly fine with the results so far.</p>
-
-<p>Once I fix the current bugs, the next step will be to synthesize the code to RTL and start trying to improve performance. There are many ways to improve performance in Vivado HLS by pipelining operations and using parallelism. Xilinx has provided HLS tutorials that I can use to try out different performance enhancements. I may also rewrite some or all of my HLS code in Verilog, which takes more effort but would give me more control of how the hardware synthesizes. The final step will be to test out the code on the actual FPGA hardware.</p>
-
-<p>I have completed the first part of my goals as listed in the original schedule. I am currently on track to be able to complete the main deliverables and produce a working design by the time of the Parallelism competition. At this point I don't know whether I will be able to complete the optimistic goal of a convolutional bitwise neural network. It depends on how long it takes me to iron out the current bugs in my code and how well the performance optimizations go. For the parallelism competition I still plan to show a demo of my code running the classification of the MNIST images on the FPGA hardware. I will also show graphs and charts characterizing the performance and power consumption, and comparing it to that of a CPU and GPU.</p>
-
-<p>I have only two main concerning issues at this point. The first is the correctness bugs in my current code. The code runs in simulation and produces classification predictions, but they do not seem to be correct. Hopefully it will only take me a few days at most to track down the source of this issue and get it resolved. The second main concern is whether I can get significant performance improvements using only Vivado HLS, without having to manually write Verilog. I am still new to HLS, but using it so far has made developing the code much faster than it would have taken me if I wrote it in Verilog. The ideal scenario is to get reasonable performance out of the FPGA while still writing high-level HLS code, but I am still unsure of how possible this is.</p>
-
-<p>Here is a new detailed schedule for the second part of the project. It is broken down by roughly half-week increments. The dates are the planned deadlines for the listed goals.</p>
-
-<p>4/21: Fix the correctness bugs in the baseline implementation. Verify that the RTL synthesis of the current code works correctly.</p>
-
-<p>4/25: Improve performance over the baseline implementation by using pipelining and parallel bitwise computations.</p>
-
-<p>4/29: Make any necessary modifications to the code so that it can be run as an application on the FPGA hardware.</p>
-
-<p>5/3: If time, get more performance improvements by rewriting some or all of the main computational kernel in Verilog. Possibly implement convolutional bitwise networks.</p>
-
-<p>5/8: Finalize website and create final report.</p>
+<p>A naive hardware synthesis of this code would take 32 cycles to complete. However, HLS is able to automatically infer a combinatorial logarithmic adder tree implementation, which only takes 1 cycle to complete. In addition to automatic parallelization, HLS lets the programmer specify various synthesis directives such as array partitioning and loop pipelining to guide the synthesis process and expose more parallelism.</p>
 
 <h3>
 <a id="references" class="anchor" href="#references" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>References:</h3>
