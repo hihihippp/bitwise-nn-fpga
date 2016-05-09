@@ -49,12 +49,13 @@ Carnegie Mellon University, 15418 Spring 2016 Final Project</p>
 
 <p>For a fully-connected neural network for classification tasks, the input is a binary vector, and the output is an N-dimensional vector, where N is the number of classes. Each non-output layer of the network consists of "multiplying" the input vector by a weight matrix (the binary multiplication is actually just XNOR), and then comparing the integer values of the output vector with a threshold to convert them back into binary values. The output layer of the network skips the thresholding step, and instead the class with the largest integer value is the predicted class. The basics of computing a forward pass through the network can be summarized as follows:</p>
 
-<p>for each layer:
+<pre><code>for each layer:
     for each output neuron:
         acc = 0
         for each input neuron:
             acc += weight XNOR input
-        output = threshold(acc)</p>
+        output = threshold(acc)
+</code></pre>
 
 <p>The outermost 'layer' loop is not parallelizable, because each layer depends on the results of the previous layer. However, either of the innermost loops is trivially parallelizable. Because there is only about 1 mathematical operation per weight, it turns out that memory bandwidth becomes the limiting factor for getting speedup improvements. As a result, for a hardware implementation most of the speedup is achieved through pipelining the innermost loops. I discuss this in more detail later, but a key takeaway is that most of the parallelism in a hardware bitwise neural network implementation comes in the form of pipelining. The goal is to achieve a total throughput of 1 operation per cycle, as this will saturate the memory bus and any further speedups are impossible.</p>
 
