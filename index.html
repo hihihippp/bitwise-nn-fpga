@@ -64,6 +64,8 @@ Carnegie Mellon University, 15418 Spring 2016 Final Project</p>
 
 <p>I first started by using open source bitwise neural network code [1] to train a network from scratch. I made some modifications to the code, such as removing a few non-bitwise operations from the network and simplifying batch normalization layers. I then wrote some Lua scripts (available in this repository) to extract the binary weights and inputs, and package them in a format suitable for loading from C code. I used the MNIST handwritten digits dataset, and the network architecture consists of 4 fully-connected layers. The sizes of the layers are 784-2048-2048-2048-10. The trained bitwise neural network achieves a test set accuracy of about 94%.</p>
 
+<p><img src="https://raw.githubusercontent.com/tdrussell/bitwise-nn-fpga/master/img/training.png" alt=""></p>
+
 <p>I implemented the main computational kernel using Xilinx's Vivado High-Level Synthesis (HLS), which which takes a sequential C or C++ description of an algorithm and synthesizes it into RTL Verilog or VHDL. HLS automatically parallelizes any operation it can. A good example of this is the following code:</p>
 
 <p>(insert code here)</p>
