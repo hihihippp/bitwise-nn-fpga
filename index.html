@@ -68,7 +68,16 @@ Carnegie Mellon University, 15418 Spring 2016 Final Project</p>
 
 <p>I implemented the main computational kernel using Xilinx's Vivado High-Level Synthesis (HLS), which which takes a sequential C or C++ description of an algorithm and synthesizes it into RTL Verilog or VHDL. HLS automatically parallelizes any operation it can. A good example of this is the following code:</p>
 
-<p>(insert code here)</p>
+<pre><code>u32 countBits(u32 x)
+{
+u32 count = 0;
+for (int i = 0; i &lt; 32; i++) {
+    count += x &amp; 1;
+    x &gt;&gt;= 1;
+}
+return count;
+}
+</code></pre>
 
 <p>A naive hardware synthesis of this code would take 32 cycles to complete. However, HLS is able to automatically infer a combinatorial logarithmic adder tree implementation, which only takes 1 cycle to complete. In addition to automatic parallelization, HLS lets the programmer specify various synthesis directives such as array partitioning and loop pipelining to guide the synthesis process and expose more parallelism.</p>
 
@@ -98,13 +107,13 @@ if (j % 32 == 31) {
 <h3>
 <a id="results" class="anchor" href="#results" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Results</h3>
 
-<p>(insert graph here)</p>
+<p><img src="https://raw.githubusercontent.com/tdrussell/bitwise-nn-fpga/master/img/speedup.png" alt=""></p>
 
 <p>Although I did not have time to get my design to run on actual hardware, I will now give calculations for theoretical speedup and power efficiency. Deep learning tasks are known to be memory bandwidth bound [3], especially when the arithmetic intensity is low due to lack of convolutional layers, which is the case in my project. My target platform is a Zybo Zynq development board, which has a memory bandwidth of 1050 Mbps. Assuming 90% saturation of memory bandwidth, or 118.125 MB/s, even the Optimization #1 version of my implementation becomes restricted by the memory bandwidth. There are about 1.3 MB of weights that need to be read for processing each image, which gives a theoretical result of 0.011s per input image on the FPGA hardware.</p>
 
 <p>I measured CPU and GPU execution time of the same neural network architecture that I implemented, the only difference being that the CPU and GPU do not pack the binary weights densely. Both CPU and GPU implementations use off-the-shelf Torch modules with no additional optimizations. A i7-3770K CPU takes on average 0.0113s per image, and a GTX980 GPU takes 0.0000825s per image. The i7-3770K has a TDP of 77W, and the GTX980 165W. I used Xilinx's Power Estimator tool and got a power usage of 1.9W for my Optimization #1 design. All of these numbers give the following graph for energy used per image:</p>
 
-<p>(insert graph)</p>
+<p><img src="https://raw.githubusercontent.com/tdrussell/bitwise-nn-fpga/master/img/efficiency.png" alt=""></p>
 
 <p>My low-end FPGA development board is much more efficient than a CPU neural network implementation, and barely worse off than the GPU. The GPU beats the FPGA mainly due to its massive memory bandwidth of 224 GB/s, which lets it excel at bandwidth-bound tasks. In terms of total power consumption, the FPGA is by far the lowest with 1.9W, suitable for even mobile applications. These results indicate that an FPGA implementation of bitwise neural networks excels in situations that demand both decent performance and low total power consumption.</p>
 
