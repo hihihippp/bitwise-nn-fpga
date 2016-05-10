@@ -70,12 +70,12 @@ Carnegie Mellon University, 15418 Spring 2016 Final Project</p>
 
 <pre><code>u32 countBits(u32 x)
 {
-u32 count = 0;
-for (int i = 0; i &lt; 32; i++) {
-    count += x &amp; 1;
-    x &gt;&gt;= 1;
-}
-return count;
+    u32 count = 0;
+    for (int i = 0; i &lt; 32; i++) {
+        count += x &amp; 1;
+        x &gt;&gt;= 1;
+    }
+    return count;
 }
 </code></pre>
 
