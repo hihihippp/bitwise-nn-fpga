@@ -34,13 +34,13 @@
         <h1>
 <a id="fpga-implementation-of-bitwise-neural-networks" class="anchor" href="#fpga-implementation-of-bitwise-neural-networks" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>FPGA Implementation of Bitwise Neural Networks</h1>
 
-<p>Trace Russell
+<p>Trace Russell<br>
 Carnegie Mellon University, 15418 Spring 2016 Final Project</p>
 
 <h2>
 <a id="final-writeup" class="anchor" href="#final-writeup" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Final Writeup</h2>
 
-<p>I developed an FPGA implementation of bitwise neural networks, where all of the arithmetic operations consist solely of bitwise operations and integer addition/comparison. I explore several different optimizations for adding pipelining and parallelism to the hardware to get speedups over the baseline sequential implementation. I did not have time to get my implementation running on actual hardware, but I give theoretical calculations showing how my implementation would get several orders of magnitude speedup over off-the-shelf non-bitwise neural network implementations for CPUs and GPUs, primarily due to more efficient use of memory bandwidth.</p>
+<p>I developed an FPGA implementation of bitwise neural networks, where all of the arithmetic operations consist solely of bitwise operations and integer addition/comparison. I explore several different optimizations for adding pipelining and parallelism to the hardware to get speedups over the baseline sequential implementation. I did not have time to get my implementation running on actual hardware, but I give theoretical calculations showing how my implementation beats a high-end CPU and is competitive with a high-end GPU in terms of power efficiency.</p>
 
 <h3>
 <a id="background" class="anchor" href="#background" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Background:</h3>
