@@ -62,13 +62,30 @@ Carnegie Mellon University, 15418 Spring 2016 Final Project</p>
 <h3>
 <a id="approach" class="anchor" href="#approach" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Approach</h3>
 
-<p>I first started by using open source bitwise neural network code [1] to train a network from scratch. I made some modifications to the code, such as removing a few non-bitwise operations from the network and simplifying batch normalization layers. I then wrote some Lua scripts (available in this repository) to extract the binary weights and inputs, and package them in a format suitable for loading from C code.</p>
+<p>I first started by using open source bitwise neural network code [1] to train a network from scratch. I made some modifications to the code, such as removing a few non-bitwise operations from the network and simplifying batch normalization layers. I then wrote some Lua scripts (available in this repository) to extract the binary weights and inputs, and package them in a format suitable for loading from C code. I used the MNIST handwritten digits dataset, and the network architecture consists of 4 fully-connected layers. The sizes of the layers are 784-2048-2048-2048-10. The trained bitwise neural network achieves a test set accuracy of about 94%.</p>
 
 <p>I implemented the main computational kernel using Xilinx's Vivado High-Level Synthesis (HLS), which which takes a sequential C or C++ description of an algorithm and synthesizes it into RTL Verilog or VHDL. HLS automatically parallelizes any operation it can. A good example of this is the following code:</p>
 
 <p>(insert code here)</p>
 
 <p>A naive hardware synthesis of this code would take 32 cycles to complete. However, HLS is able to automatically infer a combinatorial logarithmic adder tree implementation, which only takes 1 cycle to complete. In addition to automatic parallelization, HLS lets the programmer specify various synthesis directives such as array partitioning and loop pipelining to guide the synthesis process and expose more parallelism.</p>
+
+<p>My baseline implementation is a sequential version of the algorithm with no pipelining. The only parallelism present is what HLS is able to infer without any added synthesis directives. This version takes ~11,000,000 cycles to process one input image and predict a classification. The design uses 11% of the lookup tables (LUTs) for my FPGA board.</p>
+
+<p>The first optimization I make is to add pipelining to the inner loop (over input neurons). The new version takes ~627,000 cycles to process one image. The non-output layers have an initiation interval (II) of 2, which means they are pipelined and start processing a new set of 32 weights every 2 clock cycles. This design uses 16% of the LUTs, a moderate increases over the sequential version due to the pipelining, which must replicate hardware.</p>
+
+<p>The second optimization is to change the memory access patterns to get the II of the inner loops down to 1, which means the entire design has a throughput of about one set of 32 weights per clock cycle, which is the target we are aiming for. The previous design packed the output of a layer as follows:
+    u32 mask = 0x1 &lt;&lt; shift;
+    scratch[1][j/32] = (scratch[1][j/32] &amp; ~mask) | (out &lt;&lt; shift);
+The second line is a read-modify-write operation on scratch memory residing in block RAM, which will always take the hardware 2 cycles to complete. As a results, the maximum II of the inner loop is limited to 2. I change this code to the following:
+    tmp = tmp | (out &lt;&lt; shift);
+    if (j % 32 == 31) {
+        scratch[1][j/32] = tmp;
+        tmp = 0;
+    }
+The bits are now packed into a temporary register, which is then written to memory and cleared when it fills up. There is now only a memory write, and the II of the new design drops to 1 as expected. This new version now takes ~357,000 cycles to process one image.</p>
+
+<p>The third optimization is to pipeline the outer loop (over output neurons). In HLS, pipelining outer loops creates significantly more hardware replication, but can give higher throughputs. In my case, the hardware for the entire inner loop is replicated multiple times. One interesting thing that HLS does is create 2 memory ports on my design (there are multiple physical ports connecting the FPGA logic to the memory bus). The loop hardware is replicated such that there is actually more than 1 read per clock cycle, and multiple sets of weights are processed in parallel in addition to the pipelining. This final version takes ~162,000 cycles to process one image, but takes up 87% of the LUTs on my FPGA board and likely is not realizable in the actual hardware.</p>
 
 <h3>
 <a id="references" class="anchor" href="#references" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>References:</h3>
